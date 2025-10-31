@@ -1,0 +1,32 @@
+# Pliki specyficzne dla systemów operacyjnych
+.DS_Store
+Thumbs.db
+
+# Pliki konfiguracyjne IDE (PyCharm, VSCode itp.)
+.idea/
+.vscode/
+*.iml
+
+# Pliki tymczasowe Pythona
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Środowiska wirtualne
+venv/
+.venv/
+env/
+.env/
+venv.bak/
+
+# Pliki lokalnych ustawień i sekretów
+.env
+*.local
+
+# Pliki buildów i dystrybucji
+build/
+dist/
+*.egg-info/# Default ignored files
+/shelf/
+/workspace.xml
