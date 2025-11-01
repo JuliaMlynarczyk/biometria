@@ -1,6 +1,5 @@
 from PySide6 import QtWidgets, QtCore, QtGui
 
-
 class LoginWidget(QtWidgets.QWidget):
     registerClicked = QtCore.Signal()
     startLoginProcess = QtCore.Signal()
