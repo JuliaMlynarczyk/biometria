@@ -30,10 +30,12 @@ class LoginWorker(QObject):
             print("Worker: Porównuję z bazą...")
             time.sleep(0.5) # Symulacja działania
 
-            login_success = np.random.choice([True, False]) # Losowe powodzenie logowania, symulacja działania
+            login_success_np = np.random.choice([True, False]) # Losowe powodzenie logowania, symulacja działania
 
-            print(f"Worker: Zakończono. Wynik: {login_success}")
-            self.resultReady.emit(login_success)
+            login_success_py = bool(login_success_np)
+
+            print(f"Worker: Zakończono. Wynik: {login_success_py}")
+            self.resultReady.emit(login_success_py)
 
         except Exception as e:
             print(f"Worker: Wystąpił błąd! {e}")
