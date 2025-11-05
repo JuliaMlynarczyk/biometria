@@ -2,6 +2,9 @@ import time
 from PySide6.QtCore import QObject, Signal
 import sounddevice as sd
 import numpy as np
+from myMFCC import extract_features
+import json
+from scipy.spatial.distance import cosine
 
 
 class LoginWorker(QObject):
@@ -23,16 +26,43 @@ class LoginWorker(QObject):
             print("Worker: Nagrywanie zakończone.")
 
             #TODO napisac algorytm ekstrakcji cech - ręczny algorytm od zera
-            print("Worker: Ekstrakcja cech...")
-            time.sleep(1)  # Symulacja działania
+            #print("Worker: Ekstrakcja cech...")
+            #time.sleep(1)  # Symulacja działania
+
+            signal = audio_data.flatten()
+            # wywołanie funkcji MFCC
+            features = extract_features(signal, self.sample_rate)
+            print("Worker: Wektor cech obliczony:")
+            print(features)
 
             #TODO algorytm porównywania cech z bazą json
             print("Worker: Porównuję z bazą...")
-            time.sleep(0.5) # Symulacja działania
+            #time.sleep(0.5) # Symulacja działania
 
-            login_success_np = np.random.choice([True, False]) # Losowe powodzenie logowania, symulacja działania
+            with open("voice_users.json", "r") as f:
+                db = json.load(f)
 
-            login_success_py = bool(login_success_np)
+            best_user = None
+            best_score = 999
+
+            for username, stored_vec in db.items():
+                dist = cosine(features, stored_vec)
+                if dist < best_score:
+                    best_score = dist
+                    best_user = username
+
+            # próg podobieństwa > 0.8
+            similarity = 1 - best_score
+            if similarity > 0.8:
+                print(f"Zidentyfikowano: {best_user}, similarity={similarity:.2f}")
+                login_success_py = True
+            else:
+                print(f"Brak dopasowania (max similarity={similarity:.2f})")
+                login_success_py = False
+
+
+            #login_success_np = np.random.choice([True, False]) # Losowe powodzenie logowania, symulacja działania
+            #login_success_py = bool(login_success_np)
 
             print(f"Worker: Zakończono. Wynik: {login_success_py}")
             self.resultReady.emit(login_success_py)
