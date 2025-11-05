@@ -39,25 +39,42 @@ class LoginWorker(QObject):
             print("Worker: Porównuję z bazą...")
             #time.sleep(0.5) # Symulacja działania
 
-            with open("voice_users.json", "r") as f:
-                db = json.load(f)
+            try:
+                with open("voice_users.json", "r") as f:
+                    db = json.load(f)
+            except FileNotFoundError:
+                print("Worker: Brak pliku voice_users.json!")
+                self.resultReady.emit(False)
+                return
+
+            if not db:
+                print("Worker: Baza jest pusta.")
+                self.resultReady.emit(False)
+                return
 
             best_user = None
-            best_score = 999
+            best_score = -1
 
-            for username, stored_vec in db.items():
-                dist = cosine(features, stored_vec)
-                if dist < best_score:
-                    best_score = dist
+            for username, user_data in db.items():
+                stored_vec = np.array(user_data["mfcc"]).flatten()
+
+                if stored_vec.shape[0] != features.shape[0]:
+                    print(
+                        f"⚠️ Worker: {username} ma zły rozmiar ({stored_vec.shape[0]} zamiast {features.shape[0]}), pomijam.")
+                    continue
+
+                similarity = 1 - cosine(features, stored_vec)
+                print(f"Worker: Podobieństwo z {username}: {similarity:.4f}")
+
+                if similarity > best_score:
+                    best_score = similarity
                     best_user = username
 
-            # próg podobieństwa > 0.8
-            similarity = 1 - best_score
-            if similarity > 0.8:
-                print(f"Zidentyfikowano: {best_user}, similarity={similarity:.2f}")
+            if best_score >= 0.8:
+                print(f"Worker: Użytkownik {best_user} rozpoznany z podobieństwem {best_score:.3f}")
                 login_success_py = True
             else:
-                print(f"Brak dopasowania (max similarity={similarity:.2f})")
+                print(f"Worker: Brak dopasowania. Najlepszy wynik {best_score:.3f}")
                 login_success_py = False
 
 

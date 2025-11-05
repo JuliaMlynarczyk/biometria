@@ -19,8 +19,9 @@ class RegisterWidget(QtWidgets.QWidget):
 
         self.record_timer = QtCore.QTimer(self)
         self.record_timer.setSingleShot(True)
-        self.record_timer.setInterval(5000)  # 5 sekund
-        self.record_timer.timeout.connect(self.stop_ui_feedback)
+        self.record_timer.setInterval(5500)  # 5 sekund
+        #self.record_timer.timeout.connect(self.stop_ui_feedback)
+        self.record_timer.timeout.connect(lambda: self.stop_ui_feedback(success=False))
 
         self.title = QtWidgets.QLabel("Biometry Voice App", alignment=QtCore.Qt.AlignCenter)
         self.title.setStyleSheet("font-size: 24px; font-weight: bold; color: #333;")

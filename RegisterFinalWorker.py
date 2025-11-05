@@ -2,8 +2,11 @@ import time
 import json
 import numpy as np
 from PySide6.QtCore import QObject, Signal
+from myMFCC import extract_features
 
-DB_FILE = 'database.json'
+
+DB_FILE = 'voice_users.json'
+fs = 16000 #można zmienić albo dynamicznie ustawiać
 
 class RegisterFinalWorker(QObject):
     registrationComplete = Signal()
@@ -19,17 +22,29 @@ class RegisterFinalWorker(QObject):
 
             #TODO logika uśredniania próbek
             print("FinalWorker: Uśrednianie próbek...")
-            time.sleep(1) #symulacja działania
+            avg_signal = np.mean(np.stack(self.samples), axis=0)
+            print(f"FinalWorker: Średnia długość próbki: {len(avg_signal)}")
 
             #TODO symulacja ektrakcji cech do wektora
             print("FinalWorker: Ekstrakcja cech...")
-            time.sleep(1.5) #symulacja działania
+            sample_rate = 44100  # TODO przekazanie z konstruktora
 
-            feature_vector = np.random.rand(13)  # Symulowany wektor
+            # MFCC
+            feature_vector = extract_features(avg_signal, sample_rate)
+            print("FinalWorker: Wektor cech obliczony:")
+            print(feature_vector)
 
             print(f"FinalWorker: Zapisywanie wektora cech dla 'user_XYZ' do {DB_FILE}...")
-            self.save_to_json("user_XYZ", feature_vector.tolist())
-            time.sleep(0.5)  # Symulacja działania
+
+            # Zapis do pliku JSON
+            user_data = {
+                "mfcc": feature_vector.tolist(),
+                "fs": fs
+            }
+
+            print(f"FinalWorker: Zapisywanie wektora cech dla 'user_XYZ' do {DB_FILE}...")
+            self.save_to_json("user_XYZ", user_data)
+            time.sleep(0.5)
 
             print("FinalWorker: Rejestracja zakończona pomyślnie.")
             self.registrationComplete.emit()
